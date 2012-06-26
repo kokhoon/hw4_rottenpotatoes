@@ -4,6 +4,12 @@ class MoviesController < ApplicationController
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
     # will render app/views/movies/show.<extension> by default
+    if @movie[:director] and @movie[:director].length > 0
+puts "show: @movie[:director] = #{@movie[:director]}"
+      @link_similar = movies_path + '/director/' + ERB::Util::url_encode( @movie[:director] )
+    else
+      @link_similar = "/"
+    end
   end
 
   def index
@@ -28,6 +34,15 @@ class MoviesController < ApplicationController
       redirect_to :sort => sort, :ratings => @selected_ratings and return
     end
     @movies = Movie.find_all_by_rating(@selected_ratings.keys, ordering)
+  end
+
+  def director
+    if params[:director] 
+      @movies = Movie.where( :director => params[:director] )
+    else
+      flash[:notice] = "'#{params[:title]}' has no director info"
+      redirect_to movies_path
+    end
   end
 
   def new
