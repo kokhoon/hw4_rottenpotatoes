@@ -1,14 +1,16 @@
 class MoviesController < ApplicationController
 
   def show
+#puts "MoviesController#show params[:id] = #{params[:id]}"
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
     # will render app/views/movies/show.<extension> by default
-    if @movie[:director] and @movie[:director].length > 0
-puts "show: @movie[:director] = #{@movie[:director]}"
-      @link_similar = movies_path + '/director/' + ERB::Util::url_encode( @movie[:director] )
+    if @movie.director and @movie.director.length > 0
+#puts "show: @movie[:director] = #{@movie[:director]}"
+#      @link_similar = movies_path + '/director/' + ERB::Util::url_encode( @movie[:director] ) 
+      @link_similar = movie_path + '/director/'  
     else
-      @link_similar = "/"
+      @link_similar = movie_path + '/director/'
     end
   end
 
@@ -37,11 +39,21 @@ puts "show: @movie[:director] = #{@movie[:director]}"
   end
 
   def director
-    if params[:director] 
-      @movies = Movie.where( :director => params[:director] )
-    else
-      flash[:notice] = "'#{params[:title]}' has no director info"
-      redirect_to movies_path
+#puts "MoviesController#director: params[:director]:#{params[:director]} params[:id]:#{params[:id]}"
+    if params[:id]
+      base_movie = Movie.find(params[:id])
+      if base_movie 
+        if base_movie.director and base_movie.director.length > 0
+          @movies = base_movie.same_director
+        else
+#puts "'#{base_movie.title}' has no director info"
+          flash[:notice] = "'#{base_movie.title}' has no director info"
+          redirect_to '/'
+        end
+      else
+        #invalid movie-id, redirect to /movies
+        redirect_to movies_path
+      end
     end
   end
 
@@ -74,3 +86,4 @@ puts "show: @movie[:director] = #{@movie[:director]}"
   end
 
 end
+ 
